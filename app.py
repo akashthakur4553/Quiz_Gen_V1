@@ -8,9 +8,9 @@ import os
 app = Flask(__name__)
 
 # Configure the API key
-# genai.configure(api_key="AIzaSyCvOUiEBn6VJ4Norg87WnRTZpm5WHba0Qw")
+genai.configure(api_key="AIzaSyCvOUiEBn6VJ4Norg87WnRTZpm5WHba0Qw")
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
 def get_transcript(video_id):

@@ -4,19 +4,23 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import google.generativeai as genai
 import ast
 import os
+import logging
 
 app = Flask(__name__)
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
 # Configure the API key
-genai.configure(api_key="AIzaSyCvOUiEBn6VJ4Norg87WnRTZpm5WHba0Qw")
-
-# genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
 def get_transcript(video_id):
-    transcript = YouTubeTranscriptApi.get_transcript(video_id)
-    return " ".join([item["text"] for item in transcript])
-
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        return " ".join([item["text"] for item in transcript])
+    except Exception as e:
+        logging.error(f"Error getting transcript: {str(e)}")
+        raise
 
 def generate_questions(transcript, difficulty="medium", n_questions=10):
     template = f"""
@@ -46,24 +50,29 @@ def generate_questions(transcript, difficulty="medium", n_questions=10):
     {transcript}
     """
 
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(template)
-    return ast.literal_eval(response.text)
+    try:
+        model = genai.GenerativeModel("gemini-pro")
+        response = model.generate_content(template)
+        return ast.literal_eval(response.text)
+    except Exception as e:
+        logging.error(f"Error generating questions: {str(e)}")
+        raise
 
-
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
-
-@app.route("/generate_quiz", methods=["POST"])
+@app.route('/generate_quiz', methods=['POST'])
 def generate_quiz():
-    video_url = request.json["video_url"]
-    video_id = extract.video_id(video_url)
-    transcript = get_transcript(video_id)
-    questions = generate_questions(transcript)
-    return jsonify(questions)
+    video_url = request.json['video_url']
+    try:
+        video_id = extract.video_id(video_url)
+        transcript = get_transcript(video_id)
+        questions = generate_questions(transcript)
+        return jsonify(questions)
+    except Exception as e:
+        logging.error(f"Error in generate_quiz: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)

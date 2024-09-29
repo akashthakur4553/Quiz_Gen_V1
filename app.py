@@ -74,5 +74,9 @@ def generate_quiz():
         logging.error(f"Error in generate_quiz: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+@app.route('/test')
+def test():
+    return jsonify({"status": "ok", "message": "Test route is working"})
+# if __name__ == '__main__':
+#     app.run(debug=True)
